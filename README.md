@@ -714,6 +714,13 @@ certificates in `tls/`).
 The broker starts after OpenSIPS: OpenSIPS starts degraded and publishes once
 the broker is up.
 
+#### event_nats/06.auth-wrong-password
+
+A password the broker refuses: OpenSIPS still starts, degraded, and the
+startup warning names refused credentials as a possible cause (libnats
+reports them the same way as a broker that is down).  The pool never
+connects.
+
 #### cachedb_nats/01.secure-url-refused
 
 `require_secure_url=1` with a plaintext URL refuses to start.

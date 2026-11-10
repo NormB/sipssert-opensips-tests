@@ -1,0 +1,31 @@
+---
+# event_nats with a password the broker refuses.  libnats keeps retrying in
+# the background and reports it the same way as a broker that is down, so
+# OpenSIPS starts degraded; the startup warning must name refused
+# credentials as a possible cause, and the pool must never connect.
+# OpenSIPS runs from a generic task: still up after 8 s (timeout's 124) is
+# the expected outcome.
+timeout: 30
+
+tasks:
+  - name: NATS
+    type: generic
+    image: {{ nats_image }}
+    ip: {{ nats_ip }}
+    daemon: true
+    stop_timeout: 2
+    args: ["-js", "-m", "8222", "--user", "osips", "--pass", "S3cr@t"]
+    healthcheck:
+      test: "wget -q -O /dev/null http://127.0.0.1:8222/healthz"
+      interval: 1000000000
+      timeout: 1000000000
+      retries: 30
+
+  - name: OpenSIPS starts degraded
+    type: generic
+    image: {{ opensips_image }}
+    ip: {{ opensips_ip }}
+    entrypoint: sh
+    args: ["-c", "timeout 8 /usr/sbin/opensips -F -f /home/opensips.cfg -l udp:{{ opensips_ip }}:{{ opensips_port }} > /tmp/log 2>&1; rc=$?; cat /tmp/log; [ $rc -eq 124 ] && grep -q 'not connected at startup (broker unreachable, or credentials or TLS refused)' /tmp/log && ! grep -E -q 'NATS pool: (re)?connected to' /tmp/log"]
+    require:
+      healthy: NATS
