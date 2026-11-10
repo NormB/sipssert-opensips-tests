@@ -679,9 +679,11 @@ NATS modules (modules-contrib) against a NATS server (`nats` image) and the
 `nats` CLI (`nats-box` image).  The published `opensips-sipssert` image does
 not carry the NATS modules yet, so these sets are not in `run.yml`: run them
 with an image that has them (the five NATS modules, libnats >= 3.14 built
-with TLS, plus `tls_mgm`, `tls_openssl`, `clusterer`, `proto_bin`), e.g.
+with TLS, plus `tls_mgm`, `tls_openssl`, `clusterer`, `proto_bin`).
+`nats-image/build.sh` builds one from an OpenSIPS source tree:
 ```
-sipssert -E opensips_image=<image> nats event_nats cachedb_nats nats_consumer
+nats-image/build.sh ~/opensips opensips-sipssert-nats:local
+sipssert -x -E opensips_image=opensips-sipssert-nats:local nats event_nats cachedb_nats nats_consumer
 ```
 
 #### nats/01.one-connection-per-process
